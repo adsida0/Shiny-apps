@@ -1,0 +1,106 @@
+---
+title: "5/3/1 App"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+
+### 5/3/1 Logic
+```{r}
+library(tidyverse)
+library(shiny)
+
+
+my.weight <- readline(prompt="Enter target weight: ")
+# convert character into integer
+my.weight <- as.integer(my.weight)
+cat('5 lifts are: ', as.integer(my.weight * .65), as.integer(my.weight * .75), as.integer(my.weight * .85),"\n")
+cat('3 lifts are: ', as.integer(my.weight * .7), as.integer(my.weight * .8), as.integer(my.weight * .9),"\n")
+cat('Last lifts are: ', as.integer(my.weight * .75), " for 5, ", as.integer(my.weight * .8), " for 3, ", as.integer(my.weight * .9)," for 1+ \n")
+
+max.weight <- readline(prompt="Enter weight lifted: ")
+max.weight <- as.integer(max.weight)
+max.reps <- readline(prompt = "Enter number of reps: ")
+max.reps <- as.integer(max.reps)
+cat("One rep max is approximately; ", as.integer((max.weight + max.weight * max.reps * 0.0333)))
+
+ui <- fluidPage(
+  titlePanel("5/3/1 and 1RM"),
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput("weightInput", "Target Weight", 100, 500, 5),
+      sliderInput("liftedweightInput", "Weight Lifted", 100, 500, 5),
+      sliderInput("repsInput", "Reps Lifted", 1, 20, 1),
+    ),
+    mainPanel("the results will go here")
+  )
+)
+
+```
+
+
+### Shiny App
+```{r}
+library(shiny)
+
+# Define UI for application that draws a histogram
+ui <- fluidPage(
+
+    # Application title
+    titlePanel("5/3/1 and 1RM"),
+
+    # Sidebar with a slider input for number of bins 
+    sidebarLayout(
+        sidebarPanel(
+            numericInput("weightInput", "Target Weight", 100, 500),
+            sliderInput("liftedweightInput", "Weight Lifted", 100, 500, 5, step = 5),
+            sliderInput("repsInput", "Reps Lifted", 1, 20, 1)
+
+        ),
+
+        # Show a plot of the generated distribution
+        mainPanel(
+            tags$h3('One Rep Max'),
+            tags$h2(tags$strong(textOutput("max_weight"))),
+            
+            tags$h4('Five rep day lifts'),
+            tags$h3(textOutput("five_day")),
+            tags$h4('Three rep day lifts'),
+            tags$h3(textOutput("three_day")),
+            tags$h4('Five Three One day lifts'),
+            tags$h3(textOutput("one_day"))
+        )   
+    ) 
+)
+
+# Define output based on Wendler 5/3/1 numbers
+server <- function(input, output) {
+    
+    output$max_weight <- renderText({ 
+        (as.integer((input$liftedweightInput * input$repsInput * 0.0333 + input$liftedweightInput)))
+    })
+    output$five_day <- renderText({
+        paste(as.integer(input$weightInput * .65), "..", as.integer(input$weightInput * .75), "..", as.integer(input$weightInput * .85))
+    })
+    output$three_day <- renderText({
+        paste(as.integer(input$weightInput * .7), "..", as.integer(input$weightInput * .8), "..", as.integer(input$weightInput * .9))
+    })
+    output$one_day <- renderText({
+        paste(as.integer(input$weightInput * .75), "..", as.integer(input$weightInput * .85), "..",  as.integer(input$weightInput * .95))
+    })
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+```
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
